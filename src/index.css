@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(139, 92, 246, 0.18), transparent),
+    #0a0a0f;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2440;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3260;
+}
+
+.card {
+  @apply bg-ink-800/80 border border-white/5 rounded-2xl shadow-lg shadow-black/20 backdrop-blur-sm;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed select-none;
+}
+
+.btn-primary {
+  @apply btn bg-accent-600 text-white hover:bg-accent-500 hover:shadow-glow active:scale-[0.98];
+}
+
+.btn-secondary {
+  @apply btn bg-ink-700 text-slate-200 hover:bg-ink-600 active:scale-[0.98];
+}
+
+.btn-ghost {
+  @apply btn bg-transparent text-slate-300 hover:bg-white/5 active:scale-[0.98];
+}
+
+.btn-danger {
+  @apply btn bg-red-900/40 text-red-200 hover:bg-red-900/70 active:scale-[0.98];
+}
+
+.input {
+  @apply w-full rounded-xl bg-ink-900 border border-white/10 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent-500/60;
+}
+
+.label {
+  @apply text-xs font-medium uppercase tracking-wide text-slate-400;
+}
