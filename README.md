@@ -4,6 +4,20 @@ A locally-run app that helps you pick a game from your backlog and gives you a c
 spoiler-free challenge to make it interesting. Dark, gaming-launcher-inspired UI, no accounts,
 no cloud — everything lives in your browser's local storage.
 
+## Screenshots
+
+| Roulette | Reveal |
+|---|---|
+| ![Roulette view](docs/screenshots/01-roulette.png) | ![Roulette reveal](docs/screenshots/02-roulette-reveal.png) |
+
+| My Backlog |
+|---|
+| ![My Backlog view](docs/screenshots/03-backlog.png) |
+
+| AI-generated challenges | Active Run |
+|---|---|
+| ![Challenge generation screen](docs/screenshots/04-challenges.png) | ![Active run view](docs/screenshots/05-active-run.png) |
+
 ## Features
 
 - **Roulette** — spin an animated reel to pick a random eligible game from your backlog, with
