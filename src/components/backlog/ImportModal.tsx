@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Loader2, RefreshCw, Upload } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Loader2, RefreshCw, Search, Upload } from "lucide-react";
 import { Modal } from "../common/Modal";
 import { parseImportFile, toGamePayload } from "../../lib/importExport";
 import type { ParsedImportGame } from "../../lib/importExport";
@@ -24,6 +24,8 @@ export function ImportModal({ onClose, onImported }: ImportModalProps) {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [previewSearch, setPreviewSearch] = useState("");
 
   const [apiKeyDraft, setApiKeyDraft] = useState(settings.steamApiKey ?? "");
   const [steamIdDraft, setSteamIdDraft] = useState(settings.steamId ?? "");
@@ -78,6 +80,26 @@ export function ImportModal({ onClose, onImported }: ImportModalProps) {
       const next = new Set(prev);
       if (next.has(i)) next.delete(i);
       else next.add(i);
+      return next;
+    });
+  }
+
+  const visibleRows = useMemo(() => {
+    if (!parsed) return [];
+    const q = previewSearch.trim().toLowerCase();
+    return parsed
+      .map((p, i) => ({ p, i }))
+      .filter(({ p }) => !q || p.title.toLowerCase().includes(q));
+  }, [parsed, previewSearch]);
+
+  function deselectAll() {
+    setSelected(new Set());
+  }
+
+  function selectAllVisible() {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const { i } of visibleRows) next.add(i);
       return next;
     });
   }
@@ -211,10 +233,36 @@ export function ImportModal({ onClose, onImported }: ImportModalProps) {
       {parsed && (
         <>
           <p className="text-sm text-slate-400 mb-3">
-            Found {parsed.length} games. Duplicates (matched by title) are unchecked by default.
+            Found {parsed.length} games. Duplicates (matched by title) are unchecked by default — {selected.size}{" "}
+            selected.
           </p>
+
+          <div className="flex flex-wrap gap-2 mb-3">
+            <div className="relative flex-1 min-w-[160px]">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                className="input pl-8 text-sm"
+                placeholder="Filter this list..."
+                value={previewSearch}
+                onChange={(e) => setPreviewSearch(e.target.value)}
+              />
+            </div>
+            <button className="btn-ghost text-xs" onClick={deselectAll} disabled={selected.size === 0}>
+              Deselect all
+            </button>
+            <button className="btn-ghost text-xs" onClick={selectAllVisible}>
+              Select all{previewSearch.trim() ? " shown" : ""}
+            </button>
+          </div>
+          <p className="text-xs text-slate-500 mb-3">
+            Adding just a couple of new games? Click "Deselect all", then check only the ones you want.
+          </p>
+
           <div className="max-h-80 overflow-y-auto flex flex-col gap-1 mb-4 border border-white/5 rounded-xl p-2">
-            {parsed.map((p, i) => {
+            {visibleRows.length === 0 && (
+              <p className="text-sm text-slate-500 text-center py-6">No games match "{previewSearch}".</p>
+            )}
+            {visibleRows.map(({ p, i }) => {
               const isDupe = existingTitles.has(p.title.trim().toLowerCase());
               return (
                 <label
