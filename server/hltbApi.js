@@ -111,7 +111,12 @@ export async function lookupGameLength(title) {
     }
 
     const data = await res.json();
-    const results = (Array.isArray(data?.data) ? data.data : []).filter((g) => g.game_type === "game");
+    // "compil" covers compilation/remaster bundles (e.g. "Kingdom Hearts HD
+    // 1.5 + 2.5 ReMIX") — real, individually-purchased games that just
+    // happen to collect multiple titles. Only "mod" and "dlc" get excluded,
+    // since those aren't what someone means by adding a game to their backlog.
+    const ACCEPTABLE_TYPES = new Set(["game", "compil"]);
+    const results = (Array.isArray(data?.data) ? data.data : []).filter((g) => ACCEPTABLE_TYPES.has(g.game_type));
     if (results.length === 0) {
       return { ok: false, error: "No match found on HowLongToBeat." };
     }
