@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import type { Game, Run } from "../../types";
+import { GameCover } from "../common/GameCover";
 
 interface HistoryCardProps {
   run: Run;
@@ -16,7 +17,7 @@ export function HistoryCard({ run, game, onResetToBacklog }: HistoryCardProps) {
     <div className="card overflow-hidden">
       <button className="w-full flex items-center gap-4 p-4 text-left" onClick={() => setOpen((o) => !o)}>
         <div className="w-12 h-16 rounded-lg overflow-hidden bg-ink-700 shrink-0">
-          {game?.coverUrl && <img src={game.coverUrl} alt="" className="w-full h-full object-cover" />}
+          <GameCover coverUrl={game?.coverUrl} title={game?.title ?? ""} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-slate-100 truncate">{game?.title ?? "Unknown game"}</p>

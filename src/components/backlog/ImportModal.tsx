@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Loader2, RefreshCw, Search, Upload } from "lucide-react";
 import { Modal } from "../common/Modal";
+import { GameCover } from "../common/GameCover";
 import { parseImportFile, toGamePayload } from "../../lib/importExport";
 import type { ParsedImportGame } from "../../lib/importExport";
 import { syncSteamLibrary } from "../../lib/steamSync";
@@ -275,9 +276,11 @@ export function ImportModal({ onClose, onImported }: ImportModalProps) {
                     onChange={() => toggle(i)}
                     className="w-4 h-4 accent-accent-500"
                   />
-                  {p.coverUrl && (
-                    <img src={p.coverUrl} alt="" className="w-6 h-8 object-cover rounded shrink-0 bg-ink-700" />
-                  )}
+                  <GameCover
+                    coverUrl={p.coverUrl}
+                    title={p.title}
+                    className="w-6 h-8 object-cover rounded shrink-0 bg-ink-700"
+                  />
                   <span className="flex-1 text-slate-200">{p.title}</span>
                   {p.genre && <span className="text-xs text-slate-500">{p.genre}</span>}
                   {isDupe && <span className="text-xs text-amber-400">already in backlog</span>}

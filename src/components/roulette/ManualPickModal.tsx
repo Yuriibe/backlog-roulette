@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { Modal } from "../common/Modal";
+import { GameCover } from "../common/GameCover";
 import type { Game } from "../../types";
 
 interface ManualPickModalProps {
@@ -40,7 +41,7 @@ export function ManualPickModal({ games, onPick, onClose }: ManualPickModalProps
               className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5 text-left transition-colors"
             >
               <div className="w-9 h-12 rounded-md overflow-hidden bg-ink-700 shrink-0">
-                {g.coverUrl && <img src={g.coverUrl} alt="" className="w-full h-full object-cover" />}
+                <GameCover coverUrl={g.coverUrl} title={g.title} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-slate-100 truncate">{g.title}</p>

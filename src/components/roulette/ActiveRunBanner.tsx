@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAppStore } from "../../store/useAppStore";
 import type { Run } from "../../types";
 import { ConfirmDialog } from "../common/ConfirmDialog";
+import { GameCover } from "../common/GameCover";
 
 interface ActiveRunBannerProps {
   run: Run;
@@ -23,7 +24,7 @@ export function ActiveRunBanner({ run, onContinue }: ActiveRunBannerProps) {
       <p className="label mb-2">You already have a run in progress</p>
       <div className="flex items-center gap-4">
         <div className="w-14 h-14 rounded-lg overflow-hidden bg-ink-700 shrink-0">
-          {game.coverUrl && <img src={game.coverUrl} alt="" className="w-full h-full object-cover" />}
+          <GameCover coverUrl={game.coverUrl} title={game.title} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-slate-100 truncate">{game.title}</p>

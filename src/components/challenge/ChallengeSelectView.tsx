@@ -5,6 +5,7 @@ import { generateChallenges, getPromptPreview, validateChallenges } from "../../
 import type { Challenge, ChallengeFocus } from "../../types";
 import { ChallengeOptionCard } from "./ChallengeOptionCard";
 import { ChallengeEditModal } from "./ChallengeEditModal";
+import { GameCover } from "../common/GameCover";
 
 interface ChallengeSelectViewProps {
   gameId: string;
@@ -137,7 +138,7 @@ export function ChallengeSelectView({ gameId, onCancel, onRunStarted }: Challeng
       <header className="mb-6 flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
           <div className="w-16 h-20 rounded-lg overflow-hidden bg-ink-700 shrink-0">
-            {game.coverUrl && <img src={game.coverUrl} alt="" className="w-full h-full object-cover" />}
+            <GameCover coverUrl={game.coverUrl} title={game.title} />
           </div>
           <div>
             <p className="label mb-1">Choose a challenge for</p>

@@ -1,5 +1,6 @@
 import { Check, RotateCcw } from "lucide-react";
 import type { Game } from "../../types";
+import { GameCover } from "../common/GameCover";
 
 interface GameRevealCardProps {
   game: Game;
@@ -26,13 +27,7 @@ export function GameRevealCard({ game, rerollsLeft, onAccept, onReroll }: GameRe
     <div className="card max-w-xl mx-auto p-6 animate-pop-in">
       <div className="flex gap-5">
         <div className="w-28 h-40 rounded-xl overflow-hidden shrink-0 bg-ink-700 border border-white/10">
-          {game.coverUrl ? (
-            <img src={game.coverUrl} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-xs text-slate-400 p-2 text-center">
-              {game.title}
-            </div>
-          )}
+          <GameCover coverUrl={game.coverUrl} title={game.title} showTitleFallback />
         </div>
         <div className="flex-1 min-w-0">
           <h2 className="text-xl font-bold text-slate-100 mb-1">{game.title}</h2>

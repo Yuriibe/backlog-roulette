@@ -1,5 +1,6 @@
 import { Check, Pencil, Play, RotateCcw, Trash2 } from "lucide-react";
 import type { Game } from "../../types";
+import { GameCover } from "../common/GameCover";
 
 const STATUS_COLOR: Record<Game["status"], string> = {
   backlog: "bg-ink-700 text-slate-300",
@@ -37,13 +38,12 @@ export function GameCard({
       onClick={selectMode ? onToggleSelect : undefined}
     >
       <div className="relative aspect-[3/4] bg-ink-700">
-        {game.coverUrl ? (
-          <img src={game.coverUrl} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-sm text-slate-400 p-3 text-center">
-            {game.title}
-          </div>
-        )}
+        <GameCover
+          coverUrl={game.coverUrl}
+          title={game.title}
+          showTitleFallback
+          placeholderClassName="w-full h-full flex items-center justify-center text-sm text-slate-400 p-3 text-center"
+        />
         {selectMode ? (
           <span
             className={`absolute top-2 left-2 w-5 h-5 rounded-md border flex items-center justify-center ${

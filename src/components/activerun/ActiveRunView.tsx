@@ -6,6 +6,7 @@ import { ObjectiveList } from "./ObjectiveList";
 import { CompletionModal } from "./CompletionModal";
 import { EmptyState } from "../common/EmptyState";
 import { Modal } from "../common/Modal";
+import { GameCover } from "../common/GameCover";
 import { Dices } from "lucide-react";
 
 interface ActiveRunViewProps {
@@ -96,7 +97,7 @@ export function ActiveRunView({ onDone }: ActiveRunViewProps) {
     <div className="p-6 md:p-10 max-w-3xl mx-auto">
       <div className="flex gap-5 mb-6">
         <div className="w-24 h-32 rounded-xl overflow-hidden bg-ink-700 shrink-0 border border-white/10">
-          {game.coverUrl && <img src={game.coverUrl} alt="" className="w-full h-full object-cover" />}
+          <GameCover coverUrl={game.coverUrl} title={game.title} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">

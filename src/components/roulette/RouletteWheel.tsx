@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Game } from "../../types";
+import { GameCover } from "../common/GameCover";
 
 interface RouletteWheelProps {
   eligible: Game[];
@@ -76,13 +77,7 @@ export function RouletteWheel({ eligible, winner, spinToken, onSettled }: Roulet
             style={{ width: CARD_WIDTH }}
             className="shrink-0 h-full rounded-xl overflow-hidden border border-white/10 bg-ink-700"
           >
-            {g.coverUrl ? (
-              <img src={g.coverUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs text-slate-400 p-2 text-center">
-                {g.title}
-              </div>
-            )}
+            <GameCover coverUrl={g.coverUrl} title={g.title} showTitleFallback />
           </div>
         ))}
       </div>
