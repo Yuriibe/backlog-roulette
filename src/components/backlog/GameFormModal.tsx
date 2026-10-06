@@ -130,8 +130,23 @@ export function GameFormModal({ initial, onSave, onCancel }: GameFormModalProps)
             value={playedHours}
             onChange={(e) => setPlayedHours(e.target.value)}
           />
-          <p className="text-xs text-slate-500 mt-1">Different from the estimate above — this is time you've actually logged.</p>
+          <p className="text-xs text-slate-500 mt-1">
+            Different from the estimate above — this is time you've actually logged. Kept up to date automatically
+            when you re-sync from Steam (My Backlog → Import → Sync from Steam); edit it here for anything else.
+          </p>
         </div>
+        {initial && (
+          <div>
+            <label className="label">Added to backlog</label>
+            <p className="input mt-1 flex items-center text-slate-400">
+              {new Date(initial.createdAt).toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+          </div>
+        )}
         <div className="md:col-span-2 flex items-center gap-2">
           <input
             id="previously-played"

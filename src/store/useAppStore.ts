@@ -19,6 +19,8 @@ interface AppState {
   updateGame: (id: string, patch: Partial<Game>) => void;
   deleteGame: (id: string) => void;
   importGames: (games: Omit<Game, "id" | "createdAt">[]) => number;
+  /** Refreshes playedHours/previouslyPlayed on existing games matched by title (e.g. a Steam re-sync) without adding duplicates. Returns the number of games actually changed. */
+  syncPlayedHours: (updates: { title: string; playedHours?: number; previouslyPlayed?: boolean }[]) => number;
   removeSampleGames: () => void;
   resetGameToBacklog: (id: string) => void;
   bulkAddTag: (gameIds: string[], tag: string) => void;
@@ -106,6 +108,28 @@ export const useAppStore = create<AppState>()(
         }
         set((s) => ({ games: [...s.games, ...toAdd] }));
         return added;
+      },
+
+      syncPlayedHours: (updates) => {
+        const byTitle = new Map(
+          updates
+            .filter((u) => u.playedHours !== undefined)
+            .map((u) => [u.title.trim().toLowerCase(), u])
+        );
+        let changed = 0;
+        set((s) => ({
+          games: s.games.map((g) => {
+            const update = byTitle.get(g.title.trim().toLowerCase());
+            if (!update || update.playedHours === g.playedHours) return g;
+            changed++;
+            return {
+              ...g,
+              playedHours: update.playedHours,
+              previouslyPlayed: update.previouslyPlayed ?? g.previouslyPlayed,
+            };
+          }),
+        }));
+        return changed;
       },
 
       removeSampleGames: () => {

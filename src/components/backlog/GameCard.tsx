@@ -98,6 +98,10 @@ export function GameCard({
             ))}
           </div>
         )}
+        <div className="flex items-center justify-between mt-1.5 text-[10px] text-slate-500">
+          <span>{game.playedHours ? `Played ${game.playedHours}h` : ""}</span>
+          <span>Added {new Date(game.createdAt).toLocaleDateString()}</span>
+        </div>
       </div>
     </div>
   );

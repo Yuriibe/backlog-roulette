@@ -9,7 +9,7 @@ import { useAppStore } from "../../store/useAppStore";
 
 interface ImportModalProps {
   onClose: () => void;
-  onImported: (count: number) => void;
+  onImported: (added: number, updated: number) => void;
 }
 
 type Source = "file" | "steam";
@@ -17,6 +17,7 @@ type Source = "file" | "steam";
 export function ImportModal({ onClose, onImported }: ImportModalProps) {
   const games = useAppStore((s) => s.games);
   const importGames = useAppStore((s) => s.importGames);
+  const syncPlayedHours = useAppStore((s) => s.syncPlayedHours);
   const settings = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
 
@@ -34,14 +35,22 @@ export function ImportModal({ onClose, onImported }: ImportModalProps) {
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
-  const existingTitles = new Set(games.map((g) => g.title.trim().toLowerCase()));
+  const existingByTitle = useMemo(
+    () => new Map(games.map((g) => [g.title.trim().toLowerCase(), g])),
+    [games]
+  );
 
   function applyParsed(rows: ParsedImportGame[]) {
     setParsed(rows);
-    const nonDupeIndices = rows
-      .map((r, i) => (existingTitles.has(r.title.trim().toLowerCase()) ? -1 : i))
+    const defaultSelected = rows
+      .map((r, i) => {
+        const existing = existingByTitle.get(r.title.trim().toLowerCase());
+        if (!existing) return i; // new game — selected by default
+        if (r.playedHours !== undefined && r.playedHours !== existing.playedHours) return i; // playtime changed — selected by default
+        return -1;
+      })
       .filter((i) => i !== -1);
-    setSelected(new Set(nonDupeIndices));
+    setSelected(new Set(defaultSelected));
   }
 
   async function handleFile(file: File) {
@@ -107,9 +116,21 @@ export function ImportModal({ onClose, onImported }: ImportModalProps) {
 
   function doImport() {
     if (!parsed) return;
-    const toImport = parsed.filter((_, i) => selected.has(i)).map(toGamePayload);
-    const added = importGames(toImport);
-    onImported(added);
+    const chosen = parsed.filter((_, i) => selected.has(i));
+    const newRows = chosen.filter((r) => !existingByTitle.has(r.title.trim().toLowerCase()));
+    const dupeRows = chosen.filter((r) => existingByTitle.has(r.title.trim().toLowerCase()));
+    const added = importGames(newRows.map(toGamePayload));
+    const updated =
+      dupeRows.length > 0
+        ? syncPlayedHours(
+            dupeRows.map((r) => ({
+              title: r.title,
+              playedHours: r.playedHours,
+              previouslyPlayed: r.previouslyPlayed,
+            }))
+          )
+        : 0;
+    onImported(added, updated);
   }
 
   return (
@@ -212,7 +233,8 @@ export function ImportModal({ onClose, onImported }: ImportModalProps) {
                 <>
                   <p className="text-sm text-slate-300 mb-1">Steam account connected.</p>
                   <p className="text-xs text-slate-500 mb-4">
-                    Re-run this anytime you buy new games — already-imported titles are skipped automatically.
+                    Re-run this anytime — new games are added, and games you already track get their played-hours
+                    refreshed from Steam's current totals.
                   </p>
                   {syncError && <p className="text-sm text-red-300 mb-3">{syncError}</p>}
                   <div className="flex gap-2">
@@ -234,7 +256,8 @@ export function ImportModal({ onClose, onImported }: ImportModalProps) {
       {parsed && (
         <>
           <p className="text-sm text-slate-400 mb-3">
-            Found {parsed.length} games. Duplicates (matched by title) are unchecked by default — {selected.size}{" "}
+            Found {parsed.length} games. New games are selected by default; games already in your backlog are only
+            selected if their played time changed, so checking one just refreshes its hours — {selected.size}{" "}
             selected.
           </p>
 
@@ -264,7 +287,8 @@ export function ImportModal({ onClose, onImported }: ImportModalProps) {
               <p className="text-sm text-slate-500 text-center py-6">No games match "{previewSearch}".</p>
             )}
             {visibleRows.map(({ p, i }) => {
-              const isDupe = existingTitles.has(p.title.trim().toLowerCase());
+              const existing = existingByTitle.get(p.title.trim().toLowerCase());
+              const willRefreshHours = Boolean(existing) && p.playedHours !== undefined && p.playedHours !== existing?.playedHours;
               return (
                 <label
                   key={i}
@@ -283,7 +307,12 @@ export function ImportModal({ onClose, onImported }: ImportModalProps) {
                   />
                   <span className="flex-1 text-slate-200">{p.title}</span>
                   {p.genre && <span className="text-xs text-slate-500">{p.genre}</span>}
-                  {isDupe && <span className="text-xs text-amber-400">already in backlog</span>}
+                  {existing && willRefreshHours && (
+                    <span className="text-xs text-accent-400">
+                      {existing.playedHours ?? 0}h → {p.playedHours}h
+                    </span>
+                  )}
+                  {existing && !willRefreshHours && <span className="text-xs text-amber-400">already in backlog</span>}
                 </label>
               );
             })}
@@ -297,7 +326,7 @@ export function ImportModal({ onClose, onImported }: ImportModalProps) {
                 Cancel
               </button>
               <button className="btn-primary" onClick={doImport} disabled={selected.size === 0}>
-                Import {selected.size} game{selected.size === 1 ? "" : "s"}
+                Apply {selected.size} selection{selected.size === 1 ? "" : "s"}
               </button>
             </div>
           </div>

@@ -1,9 +1,10 @@
 import { useMemo, useRef, useState } from "react";
-import { Library, Loader2, Plus, RotateCw, Tag, Upload, Wand2, X } from "lucide-react";
+import { Library, Loader2, Plus, RefreshCw, RotateCw, Tag, Upload, Wand2, X } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import type { Game } from "../../types";
 import { uniqueGenres, uniqueTags } from "../../lib/roulette";
 import { lookupGameLength } from "../../lib/hltbLookup";
+import { syncSteamLibrary } from "../../lib/steamSync";
 import { GameCard } from "./GameCard";
 import { GameFormModal } from "./GameFormModal";
 import { ImportModal } from "./ImportModal";
@@ -24,6 +25,9 @@ export function BacklogView({ onChooseGame, onGoToActiveRun }: BacklogViewProps)
   const deleteGame = useAppStore((s) => s.deleteGame);
   const resetGameToBacklog = useAppStore((s) => s.resetGameToBacklog);
   const bulkAddTag = useAppStore((s) => s.bulkAddTag);
+  const syncPlayedHours = useAppStore((s) => s.syncPlayedHours);
+  const steamApiKey = useAppStore((s) => s.settings.steamApiKey);
+  const steamId = useAppStore((s) => s.settings.steamId);
   const runs = useAppStore((s) => s.runs);
   const activeRuns = useAppStore((s) => s.activeOrPausedRuns());
   const maxActiveRuns = useAppStore((s) => s.settings.maxActiveRuns ?? 1);
@@ -44,6 +48,8 @@ export function BacklogView({ onChooseGame, onGoToActiveRun }: BacklogViewProps)
   const [enrichProgress, setEnrichProgress] = useState<{ done: number; total: number } | null>(null);
   const [enrichSummary, setEnrichSummary] = useState<string | null>(null);
   const cancelEnrichRef = useRef(false);
+  const [syncingSteam, setSyncingSteam] = useState(false);
+  const [steamSyncMsg, setSteamSyncMsg] = useState<{ text: string; error?: boolean } | null>(null);
 
   const genres = useMemo(() => uniqueGenres(games), [games]);
   const tags = useMemo(() => uniqueTags(games), [games]);
@@ -137,6 +143,26 @@ export function BacklogView({ onChooseGame, onGoToActiveRun }: BacklogViewProps)
     );
   }
 
+  async function syncAllPlayedHours() {
+    if (!steamApiKey || !steamId) return;
+    setSyncingSteam(true);
+    setSteamSyncMsg(null);
+    const result = await syncSteamLibrary(steamApiKey, steamId);
+    setSyncingSteam(false);
+    if (!result.ok || !result.games) {
+      setSteamSyncMsg({ text: result.error ?? "Steam sync failed.", error: true });
+      return;
+    }
+    const updated = syncPlayedHours(result.games.map((g) => ({ title: g.title, playedHours: g.playedHours, previouslyPlayed: g.previouslyPlayed })));
+    setSteamSyncMsg({
+      text:
+        updated > 0
+          ? `Refreshed playtime for ${updated} game${updated === 1 ? "" : "s"}.`
+          : "Playtime is already up to date.",
+    });
+    setTimeout(() => setSteamSyncMsg(null), 4000);
+  }
+
   return (
     <div className="p-6 md:p-10 max-w-6xl mx-auto">
       <header className="flex items-center justify-between flex-wrap gap-3 mb-6">
@@ -161,6 +187,17 @@ export function BacklogView({ onChooseGame, onGoToActiveRun }: BacklogViewProps)
             >
               {enriching ? <Loader2 size={16} className="animate-spin" /> : <RotateCw size={16} />}
               Recalibrate all ({games.length})
+            </button>
+          )}
+          {steamApiKey && steamId && (
+            <button
+              className="btn-secondary"
+              onClick={syncAllPlayedHours}
+              disabled={syncingSteam}
+              title="Refreshes played hours for every game already in your backlog that's also in your Steam library. Doesn't add or remove games."
+            >
+              {syncingSteam ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+              Sync playtime from Steam
             </button>
           )}
           <button
@@ -202,6 +239,15 @@ export function BacklogView({ onChooseGame, onGoToActiveRun }: BacklogViewProps)
       )}
       {enrichSummary && (
         <div className="card px-4 py-2 mb-4 text-sm text-emerald-300 animate-fade-in">{enrichSummary}</div>
+      )}
+      {steamSyncMsg && (
+        <div
+          className={`card px-4 py-2 mb-4 text-sm animate-fade-in ${
+            steamSyncMsg.error ? "text-red-300" : "text-emerald-300"
+          }`}
+        >
+          {steamSyncMsg.text}
+        </div>
       )}
 
       {selectMode && (
@@ -306,9 +352,12 @@ export function BacklogView({ onChooseGame, onGoToActiveRun }: BacklogViewProps)
       {importing && (
         <ImportModal
           onClose={() => setImporting(false)}
-          onImported={(count) => {
+          onImported={(added, updated) => {
             setImporting(false);
-            setImportedMsg(`Imported ${count} game${count === 1 ? "" : "s"}.`);
+            const parts: string[] = [];
+            if (added > 0) parts.push(`imported ${added} game${added === 1 ? "" : "s"}`);
+            if (updated > 0) parts.push(`refreshed playtime for ${updated} game${updated === 1 ? "" : "s"}`);
+            setImportedMsg(parts.length > 0 ? `Done — ${parts.join(", ")}.` : "Nothing new to apply.");
             setTimeout(() => setImportedMsg(null), 4000);
           }}
         />
