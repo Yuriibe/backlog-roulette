@@ -4,6 +4,8 @@
  * and so CORS (Steam's API doesn't send permissive CORS headers) is a non-issue.
  */
 
+import { cleanTitle } from "./textUtils.js";
+
 const FETCH_TIMEOUT_MS = 15_000;
 
 async function fetchJson(url) {
@@ -87,7 +89,7 @@ export async function syncSteamLibrary(apiKey, steamIdOrVanity) {
         // by an already-"filled" field.
         const playedHours = Math.round((g.playtime_forever ?? 0) / 60) || undefined;
         return {
-          title: g.name.trim(),
+          title: cleanTitle(g.name),
           playedHours,
           previouslyPlayed: (g.playtime_forever ?? 0) > 0,
           coverUrl: `https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appid}/library_600x900.jpg`,

@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import type { Challenge, Game, Run, RunObjective, Settings } from "../types";
 import { DEFAULT_SETTINGS } from "../types";
 import { SAMPLE_GAMES } from "../data/sampleGames";
+import { cleanTitle } from "../lib/cleanTitle";
 
 function id(): string {
   return crypto.randomUUID();
@@ -65,6 +66,7 @@ export const useAppStore = create<AppState>()(
       addGame: (game) => {
         const newGame: Game = {
           ...game,
+          title: cleanTitle(game.title),
           id: id(),
           createdAt: new Date().toISOString(),
           status: game.status ?? "backlog",
@@ -74,8 +76,9 @@ export const useAppStore = create<AppState>()(
       },
 
       updateGame: (gameId, patch) => {
+        const cleanPatch = patch.title !== undefined ? { ...patch, title: cleanTitle(patch.title) } : patch;
         set((s) => ({
-          games: s.games.map((g) => (g.id === gameId ? { ...g, ...patch } : g)),
+          games: s.games.map((g) => (g.id === gameId ? { ...g, ...cleanPatch } : g)),
         }));
       },
 
@@ -91,10 +94,11 @@ export const useAppStore = create<AppState>()(
         let added = 0;
         const toAdd: Game[] = [];
         for (const g of newGames) {
-          const key = g.title.trim().toLowerCase();
+          const title = cleanTitle(g.title);
+          const key = title.trim().toLowerCase();
           if (existing.has(key)) continue;
           existing.add(key);
-          toAdd.push({ ...g, id: id(), createdAt: new Date().toISOString() });
+          toAdd.push({ ...g, title, id: id(), createdAt: new Date().toISOString() });
           added++;
         }
         set((s) => ({ games: [...s.games, ...toAdd] }));
@@ -229,6 +233,14 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: "backlog-roulette-data",
+      version: 1,
+      migrate: (persistedState, version) => {
+        const state = persistedState as { games?: Game[] } | undefined;
+        if (version < 1 && state?.games) {
+          state.games = state.games.map((g) => ({ ...g, title: cleanTitle(g.title) }));
+        }
+        return state;
+      },
     }
   )
 );

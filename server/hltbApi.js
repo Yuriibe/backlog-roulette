@@ -15,6 +15,8 @@
  * fetches a fresh token first.
  */
 
+import { cleanTitle } from "./textUtils.js";
+
 const FETCH_TIMEOUT_MS = 10_000;
 const BROWSER_HEADERS = {
   "User-Agent":
@@ -75,12 +77,17 @@ export async function lookupGameLength(title) {
   try {
     const token = await getSearchToken();
 
+    // ™/®/© are sent as literal search tokens if left in and reliably return
+    // zero matches — strip them from the query itself, not just the later
+    // result-matching step.
+    const queryTitle = cleanTitle(title);
+
     const res = await fetchWithTimeout("https://howlongtobeat.com/api/search/site", {
       method: "POST",
       headers: { ...BROWSER_HEADERS, "Content-Type": "application/json", "x-auth-token": token },
       body: JSON.stringify({
         searchType: "games",
-        searchTerms: title.trim().split(/\s+/).filter(Boolean),
+        searchTerms: queryTitle.split(/\s+/).filter(Boolean),
         searchPage: 1,
         size: 10,
         searchOptions: {

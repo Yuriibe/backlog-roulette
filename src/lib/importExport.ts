@@ -1,4 +1,5 @@
 import type { Game, PlaytimeBucket, Run, Settings } from "../types";
+import { cleanTitle } from "./cleanTitle";
 
 export interface ParsedImportGame {
   title: string;
@@ -48,7 +49,7 @@ function parseJson(text: string): ParsedImportGame[] {
           ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appid}/library_600x900.jpg`
           : undefined);
       return {
-        title: String(title).trim(),
+        title: cleanTitle(String(title)),
         genre: g.genre ?? g.Genre ?? undefined,
         estimatedHours,
         playtime: bucketFromHours(estimatedHours),
@@ -108,7 +109,7 @@ function parseCsv(text: string): ParsedImportGame[] {
   const rows: ParsedImportGame[] = [];
   for (let i = 1; i < lines.length; i++) {
     const cells = splitLine(lines[i]);
-    const title = cells[titleIdx]?.trim();
+    const title = cleanTitle(cells[titleIdx] ?? "");
     if (!title) continue;
     const hoursRaw = hoursIdx !== -1 ? Number(cells[hoursIdx]) : undefined;
     const estimatedHours = hoursRaw !== undefined && !Number.isNaN(hoursRaw) ? hoursRaw : undefined;
