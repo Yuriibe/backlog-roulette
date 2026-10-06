@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import type { GameStatus } from "../../types";
+import { BACKLOG_SORT_OPTIONS } from "../../lib/roulette";
+import type { BacklogSort } from "../../lib/roulette";
 
 export interface BacklogFilters {
   search: string;
@@ -10,6 +12,7 @@ export interface BacklogFilters {
   tag: string | "all";
   played: "any" | "never" | "previously";
   hasEstimate: "any" | "missing" | "set";
+  sort: BacklogSort;
 }
 
 export const DEFAULT_BACKLOG_FILTERS: BacklogFilters = {
@@ -20,6 +23,7 @@ export const DEFAULT_BACKLOG_FILTERS: BacklogFilters = {
   tag: "all",
   played: "any",
   hasEstimate: "any",
+  sort: "added-desc",
 };
 
 interface FilterBarProps {
@@ -109,6 +113,17 @@ export function FilterBar({ filters, genres, tags, onChange }: FilterBarProps) {
             ))}
           </select>
         )}
+        <select
+          className="input w-auto"
+          value={filters.sort}
+          onChange={(e) => onChange({ ...filters, sort: e.target.value as BacklogSort })}
+        >
+          {BACKLOG_SORT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              Sort: {o.label}
+            </option>
+          ))}
+        </select>
 
         <button
           className={`text-xs px-3 py-2 rounded-xl border flex items-center gap-1.5 transition-colors ${

@@ -33,3 +33,51 @@ export function uniqueTags(games: Game[]): string[] {
   }
   return Array.from(set).sort();
 }
+
+export type BacklogSort =
+  | "added-desc"
+  | "added-asc"
+  | "title-asc"
+  | "title-desc"
+  | "playedHours-desc"
+  | "playedHours-asc"
+  | "estimatedHours-desc"
+  | "estimatedHours-asc";
+
+export const BACKLOG_SORT_OPTIONS: { value: BacklogSort; label: string }[] = [
+  { value: "added-desc", label: "Recently added" },
+  { value: "added-asc", label: "Oldest added" },
+  { value: "title-asc", label: "Title (A–Z)" },
+  { value: "title-desc", label: "Title (Z–A)" },
+  { value: "playedHours-desc", label: "Most played" },
+  { value: "playedHours-asc", label: "Least played" },
+  { value: "estimatedHours-desc", label: "Longest to beat" },
+  { value: "estimatedHours-asc", label: "Shortest to beat" },
+];
+
+/** Numeric fields are nullable (not every game has an estimate/played hours) — games missing the field always sort last, regardless of direction. */
+function compareNullableNumbers(a: number | undefined, b: number | undefined, mult: 1 | -1): number {
+  if (a === undefined && b === undefined) return 0;
+  if (a === undefined) return 1;
+  if (b === undefined) return -1;
+  return (a - b) * mult;
+}
+
+export function sortGames(games: Game[], sort: BacklogSort): Game[] {
+  const [key, dir] = sort.split("-") as [string, "asc" | "desc"];
+  const mult = dir === "asc" ? 1 : -1;
+  return [...games].sort((a, b) => {
+    switch (key) {
+      case "added":
+        return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * mult;
+      case "title":
+        return a.title.localeCompare(b.title) * mult;
+      case "playedHours":
+        return compareNullableNumbers(a.playedHours, b.playedHours, mult);
+      case "estimatedHours":
+        return compareNullableNumbers(a.estimatedHours, b.estimatedHours, mult);
+      default:
+        return 0;
+    }
+  });
+}

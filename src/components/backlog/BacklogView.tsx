@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { Library, Loader2, Plus, RefreshCw, RotateCw, Tag, Upload, Wand2, X } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import type { Game } from "../../types";
-import { uniqueGenres, uniqueTags } from "../../lib/roulette";
+import { sortGames, uniqueGenres, uniqueTags } from "../../lib/roulette";
 import { lookupGameLength } from "../../lib/hltbLookup";
 import { syncSteamLibrary } from "../../lib/steamSync";
 import { GameCard } from "./GameCard";
@@ -56,7 +56,7 @@ export function BacklogView({ onChooseGame, onGoToActiveRun }: BacklogViewProps)
   const missingInfoGames = useMemo(() => games.filter((g) => !g.playtime && !g.estimatedHours), [games]);
 
   const filtered = useMemo(() => {
-    return games.filter((g) => {
+    const matched = games.filter((g) => {
       if (filters.status !== "all" && g.status !== filters.status) return false;
       if (filters.genre !== "all" && g.genre !== filters.genre) return false;
       if (filters.playtime !== "any" && g.playtime !== filters.playtime) return false;
@@ -68,6 +68,7 @@ export function BacklogView({ onChooseGame, onGoToActiveRun }: BacklogViewProps)
       if (filters.search.trim() && !g.title.toLowerCase().includes(filters.search.trim().toLowerCase())) return false;
       return true;
     });
+    return sortGames(matched, filters.sort);
   }, [games, filters]);
 
   function hasActiveRun(gameId: string) {
