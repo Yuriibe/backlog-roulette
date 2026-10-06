@@ -111,6 +111,23 @@ export function SettingsView() {
       </section>
 
       <section className="card p-5">
+        <h2 className="font-semibold text-slate-100 mb-3">Active games</h2>
+        <label className="label block mb-1">Max games active at the same time</label>
+        <input
+          type="number"
+          min={1}
+          max={20}
+          className="input w-32"
+          value={settings.maxActiveRuns ?? 1}
+          onChange={(e) => updateSettings({ maxActiveRuns: Math.max(1, Number(e.target.value) || 1) })}
+        />
+        <p className="text-xs text-slate-500 mt-2">
+          How many games can have an in-progress run at once. Raise this to juggle multiple games; the Roulette and
+          "Play this" button will stop you once you hit the limit.
+        </p>
+      </section>
+
+      <section className="card p-5">
         <h2 className="font-semibold text-slate-100 mb-3">Roulette</h2>
         <label className="label block mb-1">Max rerolls per spin session</label>
         <input

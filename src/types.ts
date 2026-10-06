@@ -80,6 +80,8 @@ export interface Settings {
   steamApiKey?: string;
   steamId?: string;
   challengeFocus: ChallengeFocus;
+  /** How many games can be "active" (have an in-progress run) at the same time. */
+  maxActiveRuns: number;
 }
 
 export interface RouletteFilters {
@@ -99,4 +101,5 @@ export const DEFAULT_FILTERS: RouletteFilters = {
 export const DEFAULT_SETTINGS: Settings = {
   maxRerolls: 3,
   challengeFocus: "longform",
+  maxActiveRuns: 1,
 };

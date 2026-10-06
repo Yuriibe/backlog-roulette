@@ -24,10 +24,12 @@ interface AppState {
   bulkAddTag: (gameIds: string[], tag: string) => void;
 
   // runs
-  activeOrPausedRun: () => Run | undefined;
+  activeOrPausedRuns: () => Run[];
   startRun: (gameId: string, challenge: Challenge) => Run;
   pauseRun: (runId: string) => void;
   resumeRun: (runId: string) => void;
+  /** Ends a run and puts the game straight back in the backlog, without recording it as abandoned. */
+  cancelRun: (runId: string) => void;
   abandonRun: (runId: string, reason?: string) => void;
   completeRun: (runId: string, completion: Run["completion"]) => void;
   toggleObjective: (runId: string, objectiveId: string) => void;
@@ -127,8 +129,8 @@ export const useAppStore = create<AppState>()(
         }));
       },
 
-      activeOrPausedRun: () => {
-        return get().runs.find((r) => r.status === "active" || r.status === "paused");
+      activeOrPausedRuns: () => {
+        return get().runs.filter((r) => r.status === "active" || r.status === "paused");
       },
 
       startRun: (gameId, challenge) => {
@@ -157,6 +159,15 @@ export const useAppStore = create<AppState>()(
       resumeRun: (runId) => {
         set((s) => ({
           runs: s.runs.map((r) => (r.id === runId ? { ...r, status: "active" } : r)),
+        }));
+      },
+
+      cancelRun: (runId) => {
+        const run = get().runs.find((r) => r.id === runId);
+        if (!run) return;
+        set((s) => ({
+          runs: s.runs.filter((r) => r.id !== runId),
+          games: s.games.map((g) => (g.id === run.gameId ? { ...g, status: "backlog" } : g)),
         }));
       },
 

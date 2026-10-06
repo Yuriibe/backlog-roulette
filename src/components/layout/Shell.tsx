@@ -25,7 +25,7 @@ const NAV_ITEMS: NavItemDef[] = [
 ];
 
 export function Shell({ view, onNavigate, children }: ShellProps) {
-  const activeRun = useAppStore((s) => s.activeOrPausedRun());
+  const activeRunCount = useAppStore((s) => s.activeOrPausedRuns().length);
 
   return (
     <div className="flex min-h-screen">
@@ -39,7 +39,7 @@ export function Shell({ view, onNavigate, children }: ShellProps) {
         <nav className="flex flex-col gap-1">
           {NAV_ITEMS.map((item) => {
             const isActive = view === item.view;
-            const showBadge = item.view === "active-run" && activeRun;
+            const showBadge = item.view === "active-run" && activeRunCount > 0;
             return (
               <button
                 key={item.view}

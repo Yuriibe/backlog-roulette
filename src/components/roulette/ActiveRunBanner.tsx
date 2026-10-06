@@ -1,4 +1,4 @@
-import { Pause, Play, X } from "lucide-react";
+import { Pause, Play, RotateCcw, X } from "lucide-react";
 import { useState } from "react";
 import { useAppStore } from "../../store/useAppStore";
 import type { Run } from "../../types";
@@ -14,14 +14,15 @@ export function ActiveRunBanner({ run, onContinue }: ActiveRunBannerProps) {
   const game = useAppStore((s) => s.games.find((g) => g.id === run.gameId));
   const pauseRun = useAppStore((s) => s.pauseRun);
   const resumeRun = useAppStore((s) => s.resumeRun);
+  const cancelRun = useAppStore((s) => s.cancelRun);
   const abandonRun = useAppStore((s) => s.abandonRun);
   const [confirmingAbandon, setConfirmingAbandon] = useState(false);
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
 
   if (!game) return null;
 
   return (
     <div className="card max-w-xl mx-auto p-5 animate-fade-in border-accent-600/30">
-      <p className="label mb-2">You already have a run in progress</p>
       <div className="flex items-center gap-4">
         <div className="w-14 h-14 rounded-lg overflow-hidden bg-ink-700 shrink-0">
           <GameCover coverUrl={game.coverUrl} title={game.title} />
@@ -47,10 +48,26 @@ export function ActiveRunBanner({ run, onContinue }: ActiveRunBannerProps) {
             <Play size={16} /> Resume
           </button>
         )}
+        <button className="btn-ghost" onClick={() => setConfirmingCancel(true)}>
+          <RotateCcw size={16} /> Put back in backlog
+        </button>
         <button className="btn-ghost text-red-300" onClick={() => setConfirmingAbandon(true)}>
           <X size={16} /> Abandon
         </button>
       </div>
+
+      {confirmingCancel && (
+        <ConfirmDialog
+          title="Put this game back in the backlog?"
+          message="This ends the run without counting it as abandoned — no history entry is kept, as if it never started. Your notes and objective progress on this run will be lost."
+          confirmLabel="Put back in backlog"
+          onConfirm={() => {
+            cancelRun(run.id);
+            setConfirmingCancel(false);
+          }}
+          onCancel={() => setConfirmingCancel(false)}
+        />
+      )}
 
       {confirmingAbandon && (
         <ConfirmDialog

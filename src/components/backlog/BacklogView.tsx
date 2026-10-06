@@ -25,7 +25,9 @@ export function BacklogView({ onChooseGame, onGoToActiveRun }: BacklogViewProps)
   const resetGameToBacklog = useAppStore((s) => s.resetGameToBacklog);
   const bulkAddTag = useAppStore((s) => s.bulkAddTag);
   const runs = useAppStore((s) => s.runs);
-  const activeRun = useAppStore((s) => s.activeOrPausedRun());
+  const activeRuns = useAppStore((s) => s.activeOrPausedRuns());
+  const maxActiveRuns = useAppStore((s) => s.settings.maxActiveRuns ?? 1);
+  const atActiveLimit = activeRuns.length >= maxActiveRuns;
 
   const [filters, setFilters] = useState<BacklogFilters>(DEFAULT_BACKLOG_FILTERS);
   const [editing, setEditing] = useState<Game | "new" | null>(null);
@@ -73,7 +75,7 @@ export function BacklogView({ onChooseGame, onGoToActiveRun }: BacklogViewProps)
   }
 
   function handlePlay(game: Game) {
-    if (activeRun) {
+    if (atActiveLimit) {
       setBlockedPlay(game);
       return;
     }
@@ -323,10 +325,10 @@ export function BacklogView({ onChooseGame, onGoToActiveRun }: BacklogViewProps)
         />
       )}
 
-      {blockedPlay && activeRun && (
+      {blockedPlay && atActiveLimit && (
         <ConfirmDialog
-          title="You already have a run in progress"
-          message={`Finish, pause, or abandon your current run before starting "${blockedPlay.title}". Only one run can be active at a time.`}
+          title="You've reached your active game limit"
+          message={`You can have ${maxActiveRuns} game${maxActiveRuns === 1 ? "" : "s"} active at once. Finish, pause, or abandon one before starting "${blockedPlay.title}" — or raise the limit in Settings.`}
           confirmLabel="Go to Active Run"
           onConfirm={() => {
             setBlockedPlay(null);

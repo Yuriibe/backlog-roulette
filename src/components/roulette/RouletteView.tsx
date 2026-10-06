@@ -20,8 +20,10 @@ interface RouletteViewProps {
 
 export function RouletteView({ onGameAccepted, onGoToActiveRun }: RouletteViewProps) {
   const games = useAppStore((s) => s.games);
-  const activeRun = useAppStore((s) => s.activeOrPausedRun());
+  const activeRuns = useAppStore((s) => s.activeOrPausedRuns());
   const maxRerolls = useAppStore((s) => s.settings.maxRerolls);
+  const maxActiveRuns = useAppStore((s) => s.settings.maxActiveRuns ?? 1);
+  const atActiveLimit = activeRuns.length >= maxActiveRuns;
 
   const [filters, setFilters] = useState<RouletteFilters>(DEFAULT_FILTERS);
   const [phase, setPhase] = useState<Phase>("setup");
@@ -51,10 +53,18 @@ export function RouletteView({ onGameAccepted, onGoToActiveRun }: RouletteViewPr
     onGameAccepted(game.id);
   }
 
-  if (activeRun) {
+  if (atActiveLimit) {
     return (
       <div className="p-6 md:p-10 flex flex-col gap-6 items-center justify-center min-h-screen">
-        <ActiveRunBanner run={activeRun} onContinue={onGoToActiveRun} />
+        <p className="text-sm text-slate-400 text-center max-w-md">
+          You've reached your limit of {maxActiveRuns} active game{maxActiveRuns === 1 ? "" : "s"}. Finish, pause,
+          or abandon one below before starting another — or raise the limit in Settings.
+        </p>
+        <div className="flex flex-col gap-4 w-full items-center">
+          {activeRuns.map((run) => (
+            <ActiveRunBanner key={run.id} run={run} onContinue={onGoToActiveRun} />
+          ))}
+        </div>
       </div>
     );
   }
@@ -65,6 +75,16 @@ export function RouletteView({ onGameAccepted, onGoToActiveRun }: RouletteViewPr
         <h1 className="text-2xl md:text-3xl font-bold text-slate-100 mb-1">What should I play?</h1>
         <p className="text-sm text-slate-400">Spin to let fate pick your next game from the backlog.</p>
       </header>
+
+      {activeRuns.length > 0 && (
+        <p className="text-xs text-slate-500 text-center mb-6">
+          {activeRuns.length} / {maxActiveRuns} active game{maxActiveRuns === 1 ? "" : "s"} in progress —{" "}
+          <button className="underline hover:text-slate-300" onClick={onGoToActiveRun}>
+            view them
+          </button>
+          .
+        </p>
+      )}
 
       {phase === "setup" && (
         <div className="flex flex-col gap-6 items-center">
