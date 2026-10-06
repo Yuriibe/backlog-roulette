@@ -20,7 +20,7 @@ export interface Game {
   createdAt: string;
 }
 
-export type ChallengeStyle = "creative" | "exploration" | "wildcard";
+export type ChallengeStyle = "creative" | "exploration" | "wildcard" | "freeplay";
 
 export interface Challenge {
   id: string;
@@ -32,6 +32,17 @@ export interface Challenge {
   whyFun: string;
   effortEstimate?: string;
 }
+
+/** Used when the player wants to mark a game as actively playing without generating an AI challenge. */
+export const FREEPLAY_CHALLENGE: Challenge = {
+  id: "freeplay",
+  style: "freeplay",
+  name: "Free play",
+  description: "No challenge — just playing.",
+  primaryObjective: "",
+  bonusObjectives: [],
+  whyFun: "",
+};
 
 export interface RunObjective {
   id: string;

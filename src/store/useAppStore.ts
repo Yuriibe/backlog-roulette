@@ -41,6 +41,7 @@ interface AppState {
 }
 
 function objectivesFromChallenge(challenge: Challenge): RunObjective[] {
+  if (challenge.style === "freeplay") return [];
   const primary: RunObjective = {
     id: id(),
     text: challenge.primaryObjective,

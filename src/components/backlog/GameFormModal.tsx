@@ -80,10 +80,15 @@ export function GameFormModal({ initial, onSave, onCancel }: GameFormModalProps)
           <label className="label">Status</label>
           <select className="input mt-1" value={status} onChange={(e) => setStatus(e.target.value as GameStatus)}>
             <option value="backlog">Backlog</option>
-            <option value="active">Active</option>
+            {status === "active" && <option value="active">Active</option>}
             <option value="completed">Completed</option>
             <option value="abandoned">Abandoned</option>
           </select>
+          {status === "active" && (
+            <p className="text-xs text-slate-500 mt-1">
+              To start a game playing, use "Play this" from the backlog instead — it tracks a real run.
+            </p>
+          )}
         </div>
         <div>
           <label className="label">Playtime bucket</label>

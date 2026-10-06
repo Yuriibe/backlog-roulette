@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2, RefreshCw, Shuffle, TriangleAlert } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { generateChallenges, getPromptPreview, validateChallenges } from "../../lib/api";
+import { FREEPLAY_CHALLENGE } from "../../types";
 import type { Challenge, ChallengeFocus } from "../../types";
 import { ChallengeOptionCard } from "./ChallengeOptionCard";
 import { ChallengeEditModal } from "./ChallengeEditModal";
@@ -257,6 +258,12 @@ export function ChallengeSelectView({ gameId, onCancel, onRunStarted }: Challeng
       )}
 
       <div className="text-center mt-8 flex flex-col items-center gap-2">
+        <button
+          className="text-xs text-slate-500 underline hover:text-slate-300"
+          onClick={() => handleChoose(FREEPLAY_CHALLENGE)}
+        >
+          Just start playing — skip the challenge
+        </button>
         <button
           className="text-xs text-slate-500 underline hover:text-slate-300"
           onClick={() => {

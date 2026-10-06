@@ -1,10 +1,11 @@
-import { Compass, Pencil, Shuffle, Sparkles } from "lucide-react";
+import { Compass, Gamepad2, Pencil, Shuffle, Sparkles } from "lucide-react";
 import type { Challenge, ChallengeStyle } from "../../types";
 
 const STYLE_META: Record<ChallengeStyle, { label: string; icon: typeof Sparkles; color: string }> = {
   creative: { label: "Creative", icon: Sparkles, color: "text-amber-300 bg-amber-500/15" },
   exploration: { label: "Exploration", icon: Compass, color: "text-emerald-300 bg-emerald-500/15" },
   wildcard: { label: "Wildcard", icon: Shuffle, color: "text-fuchsia-300 bg-fuchsia-500/15" },
+  freeplay: { label: "Free play", icon: Gamepad2, color: "text-slate-300 bg-slate-500/15" },
 };
 
 interface ChallengeOptionCardProps {
